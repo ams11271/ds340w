@@ -1,18 +1,15 @@
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler
 
-def create_features(X, numerical_columns, categorical_columns):
+def create_features(X, y, numerical_columns, categorical_columns):
+    X_transformed = X.copy()
 
-    # Define the preprocessing steps
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', StandardScaler(), numerical_columns),
-            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_columns)
-        ]
-    )
-
-    # Fit and transform the data
-    X_transformed = preprocessor.fit_transform(X)
+    scaler = MinMaxScaler()
+    X_transformed[numerical_columns] = scaler.fit_transform(X_transformed[numerical_columns])
+    
+    for col in categorical_columns:
+        target_means = y.groupby(X[col]).mean()
+        X_transformed[col] = X[col].map(target_means)
     
     return X_transformed
+
 
